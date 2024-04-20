@@ -1,39 +1,62 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Input from "../Components/Input";
 
 function EndPoints() {
   const [endpoint, setEndpoint] = useState([]);
   const [name, setName] = useState("");
+  const [hashKey, setHashKey] = useState("");
+  
   useEffect(() => {
     const fetchData = () => {
       axios
-        .get("/EndPoints.json", {
-          headers: {
-            HashKey: "eb869bb4149f98e931be9601fa798b9a",
-          },
+        .get("/EndPoints.json")
+        .then((res) => {
+          const data = res.data;
+          setHashKey(data.HashKey);
+          setEndpoint(data.Rows);
         })
-        .then((res) => setEndpoint(res.data.Rows))
         .catch((error) => console.error("Error fetching EndPoints:", error));
     };
+
     fetchData();
+
     const interval = setInterval(fetchData, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const fetchData = () => {
+      axios
+        .post("/EndPoints.json" , {
+          HashKey: hashKey
+        }) 
+        .then((res) => {
+          const data = res.data;
+          if (data.HashKey !== hashKey) {
+            setHashKey(data.HashKey);
+            setEndpoint(data.Rows);
+          }
+        })
+        .catch((error) => console.error("Error fetching EndPoints:", error));
+    };
+
+    const interval = setInterval(fetchData, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [hashKey]); 
+
   const filter = endpoint.filter((item) => {
-    return item.HostName.includes(name);
+    return (
+      (item.HostName && item.HostName.includes(name)) ||
+      (item.IPv4 && item.IPv4.includes(name))
+    );
   });
+  
+  
 
   return (
     <div className="  endpoints container">
-      <div>
-        <input
-          type="text"
-          autoFocus
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
+    <Input name={name} setName={setName} />
       <div className="table-container">
         <table className=" content-table">
           <thead>

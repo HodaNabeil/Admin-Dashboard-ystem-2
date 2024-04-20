@@ -1,38 +1,57 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Input from "../Components/Input";
 
 
 function Events() {
   const [event, setEvent] = useState([]);
   const [name, setName] = useState("");
+  const [hashKey, setHashKey] = useState("");
   useEffect(() => {
     const fetchData = () => {
-      axios.get("/Events.json" ,{
-        headers: {
-          "HashKey": "6a039494938389f3d8323b6c93ad2ae2",
-        },
-      })
-        .then((res) => setEvent(res.data.Rows))
-        .catch((error) => console.error("Error fetching  Event:", error));
+      axios
+        .get("/Events.json")
+        .then((res) => {
+          const data = res.data;
+          setHashKey(data.HashKey);
+          setEvent(data.Rows);
+        })
+        .catch((error) => console.error("Error fetching Events:", error));
     };
+
     fetchData();
-    const interval = setInterval(fetchData, 10 * 60 * 1000); 
+
+    const interval = setInterval(fetchData, 10 * 60 * 1000);
     return () => clearInterval(interval);
-  }, []); 
+  }, []);
+
+  useEffect(() => {
+    const fetchData = () => {
+      axios
+        .post("/Events.json" , {
+          HashKey: hashKey
+        }) 
+        .then((res) => {
+          const data = res.data;
+          if (data.HashKey !== hashKey) {
+            setHashKey(data.HashKey);
+            setEvent(data.Rows);
+          }
+        })
+        .catch((error) => console.error("Error fetching Events:", error));
+    };
+
+    const interval = setInterval(fetchData, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [hashKey]); 
 
   const filter = event.filter((item) => {
     return item.HostName.includes(name);
   });
   return (
     <div className="  events container">
-      <div>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoFocus
-        />
-      </div>
+
+    <Input name={name} setName={setName} />
       <div className="table-container">
         <table className=" content-table">
           <thead>

@@ -1,55 +1,80 @@
-import { Link } from "react-router-dom";
-
+import { Link, NavLink } from "react-router-dom";
 import "./header.css";
-import { useState } from "react";
-
+import { useCallback, useEffect, useState } from "react";
+import React from "react";
 function Header() {
-  const [activeLink, setActiveLink] = useState("");
+  const [activeLink, setActiveLink] = useState("Home");
+  const [openNav, setOpenNav] = useState(false);
 
-  function handleActiveLink(link) {
+  useEffect(() => {
+    const clickOutSide = (e) => {
+      if (openNav) {
+        if (
+          !e.target.closest(".nav-links") &&
+          !e.target.closest(".menu-icons")
+        ) {
+          setOpenNav(false);
+        }
+      }
+    };
+    window.addEventListener("click", clickOutSide);
+    return () => {
+      window.removeEventListener("click", clickOutSide);
+    };
+  }, [openNav]);
+
+  const handleActiveLink = useCallback((link) => {
     setActiveLink(link);
-  }
+  }, []);
 
+  const toggle = useCallback(() => {
+    setOpenNav((prevOpenNav) => !prevOpenNav);
+  }, []);
+
+  const links = [
+    { linkName: "Home", to: "" },
+    { linkName: "Metrics", to: "metrics" },
+    { linkName: "EndPoints", to: "endPoints" },
+    { linkName: "Events", to: "events" },
+    { linkName: "Vulnerabilities", to: "vulnerabilities" },
+  ];
 
   return (
-    <header className=" header">
-      <div className="logo">logo</div>
-      <nav>
-        <ul className="nav-links">
-          <li onClick={() => handleActiveLink("Metrics")}>
-            <Link
-              to="metrics"
-              className={`${activeLink === "Metrics" && "active"}`}
-            >
-              Metrics
-            </Link>
-          </li>
-          <li onClick={() => handleActiveLink("EndPoints")}>
-            <Link
-              to="endpoints"
-              className={`${activeLink === "EndPoints" && "active"}`}
-            >
-              EndPoints
-            </Link>
-          </li>
-          <li onClick={() => handleActiveLink("Events")}>
-            <Link
-              to="events"
-              className={`${activeLink === "Events" && "active"}`}
-            >
-              Events
-            </Link>
-          </li>
-          <li onClick={() => handleActiveLink("Vulnerabilities")}>
-            <Link
-              to="vulnerabilities"
-              className={`${activeLink === "Vulnerabilities" && "active"}`}
-            >
-              Vulnerabilities
-            </Link>
-          </li>
-        </ul>
-      </nav>
+    <header className="header">
+      <div className="container">
+        <Link to="/" className="logo">
+          logo
+        </Link>
+        <nav>
+          <ul className={`nav-links ${openNav === true ? "openNav" : ""}`}>
+            {links.map((link, index) => {
+              return (
+                <li key={index}>
+                  <NavLink
+                    onClick={() => handleActiveLink(link.linkName)}
+                    to={`/${link.to}`}
+                    className={`${
+                      activeLink === link.linkName ? "active" : ""
+                    } ${openNav && "openNav"}`}
+                  >
+                    {link.linkName}
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="menu-icons" onClick={toggle}>
+            {[1, 2, 3].map((_, index) => {
+              return (
+                <span
+                  key={index}
+                  className={`${openNav ? "active-menu" : " "}`}
+                ></span>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
     </header>
   );
 }

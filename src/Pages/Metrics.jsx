@@ -1,37 +1,59 @@
-import { useEffect, useState } from "react";
-
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Input from "../Components/Input";
+
 function Metrics() {
   const [metrics, setMetrics] = useState([]);
   const [name, setName] = useState("");
+  const [hashKey, setHashKey] = useState("");
+
+
 
   useEffect(() => {
     const fetchData = () => {
       axios
-        .get("/Metrics.json", {
-          headers: {
-            HashKey: "e7c130ba67c3f16f8451a0e9e3ee9277",
-          },
+        .get("/Metrics.json")
+        .then((res) => {
+          const data = res.data;
+          setHashKey(data.HashKey);
+          setMetrics(data.Rows);
         })
-        .then((res) => setMetrics(res.data.Rows))
         .catch((error) => console.error("Error fetching metrics:", error));
     };
+
     fetchData();
 
     const interval = setInterval(fetchData, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const filter = metrics.filter((item) => {
-    return item.hostname.includes(name);
-  });
+  useEffect(() => {
+    const fetchData = () => {
+      axios
+        .post("/Metrics.json" , {
+          HashKey: hashKey
+        }) 
+        .then((res) => {
+          const data = res.data;
+          if (data.HashKey !== hashKey) {
+            setHashKey(data.HashKey);
+            setMetrics(data.Rows);
+          }
+        })
+        .catch((error) => console.error("Error fetching metrics:", error));
+    };
+
+    const interval = setInterval(fetchData, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [hashKey]); 
+
+  const filter = metrics.filter((item) => item.hostname.includes(name));
 
   return (
-    <div className=" metrics container">
+    <div className="metrics container">
       <Input name={name} setName={setName} />
       <div className="table-container">
-        <table className=" content-table">
+        <table className="content-table">
           <thead>
             <tr>
               <th>hostname</th>
@@ -44,24 +66,19 @@ function Metrics() {
               <th>memory_rss_bytes</th>
             </tr>
           </thead>
-          
           <tbody>
-            {filter.map((item, index) => {
-              return (
-                <tr key={index}>
-                  <td>{item.hostname}</td>
-                  <td>
-                    {item.endpoint_id === null ? "null" : item.endpoint_id}
-                  </td>
-                  <td>{item.platform}</td>
-                  <td>{item.status}</td>
-                  <td> {item.cpu_pct}</td>
-                  <td>{item.memory_used_pct}</td>
-                  <td>{item.system_uptime}</td>
-                  <td>{item.memory_rss_bytes}</td>
-                </tr>
-              );
-            })}
+            {filter.map((item, index) => (
+              <tr key={index}>
+                <td>{item.hostname}</td>
+                <td>{item.endpoint_id === null ? "null" : item.endpoint_id}</td>
+                <td>{item.platform}</td>
+                <td>{item.status}</td>
+                <td>{item.cpu_pct}</td>
+                <td>{item.memory_used_pct}</td>
+                <td>{item.system_uptime}</td>
+                <td>{item.memory_rss_bytes}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

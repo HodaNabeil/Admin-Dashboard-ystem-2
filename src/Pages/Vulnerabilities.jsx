@@ -6,30 +6,54 @@ import Input from "../Components/Input";
 function Vulnerabilities() {
   const [vulnerabilities, setVulnerabilities] = useState([]);
   const [name, setName] = useState("");
+  const [hashKey, setHashKey] = useState("");
 
 
   useEffect(() => {
     const fetchData = () => {
       axios
-        .get("/Vulnerabilities.json" ,{
-          headers:{
-            "HashKey": "2c82817a02bf259dd961da9cb13513ed",
-          },
+        .get("/Vulnerabilities.json")
+        .then((res) => {
+          const data = res.data;
+          setHashKey(data.HashKey);
+          setVulnerabilities(data.Rows);
         })
-        .then((res) => setVulnerabilities(res.data.Rows))
-        .catch((error) =>
-          console.error("Error fetching  Vulnerabilities:", error)
-        );
+        .catch((error) => console.error("Error fetching Vulnerabilities:", error));
     };
+
     fetchData();
+
     const interval = setInterval(fetchData, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const fetchData = () => {
+      axios
+        .post("/Vulnerabilities.json" , {
+          HashKey: hashKey
+        }) 
+        .then((res) => {
+          const data = res.data;
+          if (data.HashKey !== hashKey) {
+            setHashKey(data.HashKey);
+            setVulnerabilities(data.Rows);
+          }
+        })
+        .catch((error) => console.error("Error fetching Vulnerabilities:", error));
+    };
+
+    const interval = setInterval(fetchData, 10 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [hashKey]); 
 
   const filter = vulnerabilities.filter((item) => {
-    return item.hostname.includes(name);
+    return (
+      (item.hostname && item.hostname.includes(name)) ||
+      (item.srcIp && item.srcIp.includes(name))
+    );
   });
+  
   return (
     <div className=" vulnerabilities container">
     <div className=" vulnerabilities-top">

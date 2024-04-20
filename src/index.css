@@ -2,20 +2,21 @@
   --main-color:#fff;
   --background:#141b2d;
   --second-color:#3e4396;
+  --transition: all 0.4s ease ;
+  
 }
 
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none;
   -webkit-box-sizing: border-box;
   -o-box-sizing: border-box;
   -ms-box-sizing: border-box;
   -moz-box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-list-style: none;
-
-text-decoration: none;
 
 }
 
@@ -26,14 +27,37 @@ body {
   font-optical-sizing: auto;
   ;
 }
+/* Start Global Rules */
 .container {
-  padding-left: 40px;
-  padding-right: 40px;
+  padding-left: 20px;
+  padding-right: 20px;
   margin-right: auto;
   margin-left: auto;
 }
+@media (min-width: 768px) {
+  .container {
+    width: 750px;
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+}
+@media (min-width: 992px) {
+  .container {
+    width: 970px;
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+@media (min-width: 1200px) {
+  .container {
+    width: 1170px;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+/* End Global Rules */
 .metrics  ,.events ,.vulnerabilities ,.endpoints{
-  padding-top: 20px;
+  padding-top: 100px;
 }
 .table-container {
   overflow-x: auto;
@@ -189,3 +213,6 @@ position: relative;
   font-family: "Source Sans 3", sans-serif;
 
 }
+
+
+
