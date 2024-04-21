@@ -43,7 +43,7 @@ function Header() {
     <header className="header">
       <div className="container">
         <Link to="/" className="logo">
-          logo
+          <img src={require("../../Img/logo.jpeg")} alt="" />
         </Link>
         <nav>
           <ul className={`nav-links ${openNav === true ? "openNav" : ""}`}>
