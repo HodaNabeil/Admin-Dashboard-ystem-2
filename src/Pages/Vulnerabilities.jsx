@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Input from "../Components/Input";
 
@@ -7,7 +7,7 @@ function Vulnerabilities() {
   const [vulnerabilities, setVulnerabilities] = useState([]);
   const [name, setName] = useState("");
   const [hashKey, setHashKey] = useState("");
-
+  const [activeLink, setActiveLink] = useState("");
 
   useEffect(() => {
     const fetchData = () => {
@@ -18,7 +18,9 @@ function Vulnerabilities() {
           setHashKey(data.HashKey);
           setVulnerabilities(data.Rows);
         })
-        .catch((error) => console.error("Error fetching Vulnerabilities:", error));
+        .catch((error) =>
+          console.error("Error fetching Vulnerabilities:", error)
+        );
     };
 
     fetchData();
@@ -30,9 +32,9 @@ function Vulnerabilities() {
   useEffect(() => {
     const fetchData = () => {
       axios
-        .post("/Vulnerabilities.json" , {
-          HashKey: hashKey
-        }) 
+        .get("/Vulnerabilities.json", {
+          HashKey: hashKey,
+        })
         .then((res) => {
           const data = res.data;
           if (data.HashKey !== hashKey) {
@@ -40,12 +42,18 @@ function Vulnerabilities() {
             setVulnerabilities(data.Rows);
           }
         })
-        .catch((error) => console.error("Error fetching Vulnerabilities:", error));
+        .catch((error) =>
+          console.error("Error fetching Vulnerabilities:", error)
+        );
     };
 
     const interval = setInterval(fetchData, 10 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [hashKey]); 
+  }, [hashKey]);
+
+  const handleActiveLink = useCallback((link) => {
+    setActiveLink(link);
+  }, []);
 
   const filter = vulnerabilities.filter((item) => {
     return (
@@ -53,17 +61,30 @@ function Vulnerabilities() {
       (item.srcIp && item.srcIp.includes(name))
     );
   });
-  
+
   return (
     <div className=" vulnerabilities container">
-    <div className=" vulnerabilities-top">
-    <div className="container-btn">
-        <Link to="/" className="btn"><span>Internal Vulnerabilities</span></Link>
-        <Link to="/" className="btn"> <span>External Vulnerabilities</span></Link>
+      <div className="vulnerabilities-top ">
+        <div className="container-links-vulner">
+          <button
+            onClick={() => handleActiveLink("Internal")}
+            className={` ${activeLink === "Internal" ? "active" : ""}`}
+          >
+            Internal Vulnerabilities
+          </button>
+          <button
+            onClick={() => handleActiveLink("External")}
+            className={` ${activeLink === "External" ? "active" : ""}`}
+          >
+            External Vulnerabilities
+          </button>
+        </div>
+
+        <div className="container-input">
+          <Input name={name} setName={setName} />
+        </div>
       </div>
 
-      <Input name={name} setName={setName} />
-    </div>
       <div className="table-container">
         <table className=" content-table">
           <thead>
@@ -100,18 +121,24 @@ function Vulnerabilities() {
                   <td>{item.platform}</td>
 
                   <td>
-                    {item.vulnerability_details_isdownloaded ===false  ? "False"  : "true"}
+                    {item.vulnerability_details_isdownloaded === false
+                      ? "False"
+                      : "true"}
                   </td>
                   <td>
-                    {item.vulnerability_details_isinstalled ===false  ? "False"  : "true"}
+                    {item.vulnerability_details_isinstalled === false
+                      ? "False"
+                      : "true"}
                   </td>
                   <td>
-                    {item.vulnerability_details_ismandatory === false  ? "False"  : "true" }
-                    
-                    
+                    {item.vulnerability_details_ismandatory === false
+                      ? "False"
+                      : "true"}
                   </td>
                   <td>
-                    {item.vulnerability_details_rebootrequired === false  ? "False"  : "true"}
+                    {item.vulnerability_details_rebootrequired === false
+                      ? "False"
+                      : "true"}
                   </td>
                   <td>{item.vulnerability_details_severity}</td>
                   <td>{item.vulnerability_severity}</td>
